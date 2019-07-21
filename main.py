@@ -15,6 +15,8 @@ avatar2 = "☻"
 elMurPlein = "▓"
 elSol = "░"
 elDestruc = "▓"
+nbLigne = 15
+nbCol = 13
 
 
 def initJoueurs():
@@ -56,7 +58,7 @@ def initJoueurs():
 
 
 def initCarte(tJoueur):
-    carte = np.full((15, 13), elDestruc, dtype='str')
+    carte = np.full((nbLigne, nbCol), elDestruc, dtype='str')
     carte[1:-1:2, 1:-1] = elSol
     carte[1:-1, 1:-1:2] = elSol
     # partie normale
@@ -96,20 +98,36 @@ def on_press(key):
     if key == keyboard.Key.up:
         carte[tJoueur["y"], tJoueur["x"]] = elSol
         tJoueur["y"] -= 1
+        tJoueur["y"] = tJoueur["y"]%nbLigne
+        carte[tJoueur["y"], tJoueur["x"]] = tJoueur["avatar"]
+    if key == keyboard.Key.down:
+        carte[tJoueur["y"], tJoueur["x"]] = elSol
+        tJoueur["y"] += 1
+        tJoueur["y"] = tJoueur["y"] % nbLigne
+        carte[tJoueur["y"], tJoueur["x"]] = tJoueur["avatar"]
+    if key == keyboard.Key.left:
+        carte[tJoueur["y"], tJoueur["x"]] = elSol
+        tJoueur["x"] -= 1
+        tJoueur["x"] = tJoueur["x"] % nbCol
+        carte[tJoueur["y"], tJoueur["x"]] = tJoueur["avatar"]
+    if key == keyboard.Key.right:
+        carte[tJoueur["y"], tJoueur["x"]] = elSol
+        tJoueur["x"] += 1
+        tJoueur["x"] = tJoueur["x"] % nbCol
         carte[tJoueur["y"], tJoueur["x"]] = tJoueur["avatar"]
 
     clear()
     afficheCarte(carte)
 
-
+clear()
 tJoueur = initJoueurs()
-print(f'{tJoueur["pseudo"]}, voici votre avatar {"tJoueur[avatar]"}')
+clear()
+print(f'{tJoueur["pseudo"]}, voici votre avatar {tJoueur["avatar"]}')
 
 carte = initCarte(tJoueur)
 
-afficheCarte(carte)
-
 # Collect events until released
 with keyboard.Listener(on_press=on_press) as listener:
+    print('Appuyez sur la touche [Entrée] pour démarrer, touche [Échap] pour quitter')
     listener.join()
     sleep(0.25)
