@@ -26,7 +26,12 @@ def initJoueurs():
     while True:
         try:
             print("Choisissez un personnage :", f"1- {avatar1}", f"2- {avatar2}", sep="\n")
-            choixPerso = int(input())
+            choixPerso = input()
+
+            # par défaut
+            if choixPerso == "":
+                choixPerso = 1
+            choixPerso = int(choixPerso)
             if choixPerso == 1 or choixPerso == 2:
                 break
         except:
@@ -45,6 +50,8 @@ def initJoueurs():
             if choixPerso == 2:
                 print(f"Donnez un nom à votre personnage {avatar2}:")
             choixNom = input()
+            if choixNom == "":
+                choixNom = "Tatatetetititototututyty"
             if isinstance(choixNom, str) and choixNom != "":
                 break
         except:
@@ -90,31 +97,47 @@ def afficheCarte(carte):
             ligneCarte += elem
         print(ligneCarte)
 
+def valideMvt(key):
+    result = False
+    if key == keyboard.Key.enter:
+        result = True
+    if key == keyboard.Key.up and carte[(tJoueur["y"]-1)%nbLigne, tJoueur["x"]] != elMurPlein:
+        result = True
+    if key == keyboard.Key.down and carte[(tJoueur["y"]+1)%nbLigne, tJoueur["x"]] != elMurPlein:
+        result = True
+    if key == keyboard.Key.left and carte[tJoueur["y"], (tJoueur["x"]-1)%nbCol] != elMurPlein:
+        result = True
+    if key == keyboard.Key.right and carte[tJoueur["y"], (tJoueur["x"]+1)%nbCol] != elMurPlein:
+        result = True
+
+    return result
+
 def on_press(key):
     if key == keyboard.Key.esc:
         # Stop listener
         return False
-
-    if key == keyboard.Key.up:
-        carte[tJoueur["y"], tJoueur["x"]] = elSol
-        tJoueur["y"] -= 1
-        tJoueur["y"] = tJoueur["y"]%nbLigne
-        carte[tJoueur["y"], tJoueur["x"]] = tJoueur["avatar"]
-    if key == keyboard.Key.down:
-        carte[tJoueur["y"], tJoueur["x"]] = elSol
-        tJoueur["y"] += 1
-        tJoueur["y"] = tJoueur["y"] % nbLigne
-        carte[tJoueur["y"], tJoueur["x"]] = tJoueur["avatar"]
-    if key == keyboard.Key.left:
-        carte[tJoueur["y"], tJoueur["x"]] = elSol
-        tJoueur["x"] -= 1
-        tJoueur["x"] = tJoueur["x"] % nbCol
-        carte[tJoueur["y"], tJoueur["x"]] = tJoueur["avatar"]
-    if key == keyboard.Key.right:
-        carte[tJoueur["y"], tJoueur["x"]] = elSol
-        tJoueur["x"] += 1
-        tJoueur["x"] = tJoueur["x"] % nbCol
-        carte[tJoueur["y"], tJoueur["x"]] = tJoueur["avatar"]
+    if valideMvt(key):
+        if key == keyboard.Key.up:
+            carte[tJoueur["y"], tJoueur["x"]] = elSol
+            tJoueur["y"] -= 1
+            tJoueur["y"] = tJoueur["y"]%nbLigne
+            carte[tJoueur["y"], tJoueur["x"]] = tJoueur["avatar"]
+            valideMvt(key)
+        if key == keyboard.Key.down:
+            carte[tJoueur["y"], tJoueur["x"]] = elSol
+            tJoueur["y"] += 1
+            tJoueur["y"] = tJoueur["y"] % nbLigne
+            carte[tJoueur["y"], tJoueur["x"]] = tJoueur["avatar"]
+        if key == keyboard.Key.left:
+            carte[tJoueur["y"], tJoueur["x"]] = elSol
+            tJoueur["x"] -= 1
+            tJoueur["x"] = tJoueur["x"] % nbCol
+            carte[tJoueur["y"], tJoueur["x"]] = tJoueur["avatar"]
+        if key == keyboard.Key.right:
+            carte[tJoueur["y"], tJoueur["x"]] = elSol
+            tJoueur["x"] += 1
+            tJoueur["x"] = tJoueur["x"] % nbCol
+            carte[tJoueur["y"], tJoueur["x"]] = tJoueur["avatar"]
 
     clear()
     afficheCarte(carte)
