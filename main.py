@@ -1,5 +1,14 @@
 import numpy as np
 
+from pynput import keyboard
+from time import sleep
+
+import os
+clear = lambda: os.system('cls')
+
+global keyCapture
+keyCapture = -1
+
 # liste assets graphiques
 avatar1 = "☺"
 avatar2 = "☻"
@@ -39,10 +48,14 @@ def initJoueurs():
         except:
             continue
 
-    return choixAvatar, choixNom
+    # avatar choisi, pseudo, coord y ligne, coord x colonne
+    return {"avatar": choixAvatar,
+            "pseudo": choixNom,
+            "y": 1,
+            "x": 1}
 
 
-def initCarte():
+def initCarte(tJoueur):
     carte = np.full((15, 13), elDestruc, dtype='str')
     carte[1:-1:2, 1:-1] = elSol
     carte[1:-1, 1:-1:2] = elSol
@@ -60,21 +73,43 @@ def initCarte():
         carte[-2, 6] = elDestruc
         carte[-2, 7] = elDestruc
 
+    # positionnement des joueurs
+    if isinstance(tJoueur["avatar"], str):
+        carte[tJoueur["y"], tJoueur["x"]] = tJoueur["avatar"]
+    else:
+        carte[tJoueur["y"], tJoueur["x"]] = "1"
+
     return carte
 
 def afficheCarte(carte):
-    if isinstance(joueur[0], str):
-        carte[1, 1] = joueur[0]
     for ligne in carte:
         ligneCarte = ""
         for elem in ligne:
             ligneCarte += elem
         print(ligneCarte)
 
-# création joueur
-joueur = initJoueurs()
-print(f'{joueur[1]}, voici votre avatar {joueur[0]}')
-# création carte
-carte = initCarte()
+def on_press(key):
+    if key == keyboard.Key.esc:
+        # Stop listener
+        return False
+
+    if key == keyboard.Key.up:
+        carte[tJoueur["y"], tJoueur["x"]] = elSol
+        tJoueur["y"] -= 1
+        carte[tJoueur["y"], tJoueur["x"]] = tJoueur["avatar"]
+
+    clear()
+    afficheCarte(carte)
+
+
+tJoueur = initJoueurs()
+print(f'{tJoueur["pseudo"]}, voici votre avatar {"tJoueur[avatar]"}')
+
+carte = initCarte(tJoueur)
 
 afficheCarte(carte)
+
+# Collect events until released
+with keyboard.Listener(on_press=on_press) as listener:
+    listener.join()
+    sleep(0.25)
