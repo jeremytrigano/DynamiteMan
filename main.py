@@ -1,22 +1,27 @@
 import numpy as np
 
-from pynput import keyboard
-from time import sleep
+import pygame
+from pygame.locals import *
 
-import os
-clear = lambda: os.system('cls')
-
-global keyCapture
-keyCapture = -1
-
-# liste assets graphiques
-avatar1 = "☺"
-avatar2 = "☻"
-elMurPlein = "▓"
-elSol = "░"
-elDestruc = "▓"
+# taille carte
 nbLigne = 15
 nbCol = 13
+
+
+pygame.init()
+fenetre = pygame.display.set_mode((40*17, 40*15), RESIZABLE)
+
+fond = pygame.image.load("background.jpg").convert()
+fond = pygame.transform.scale(fond, (40*17, 40*15))
+
+# liste assets graphiques
+elMurPlein = pygame.image.load("elMurPlein.png").convert()
+elSol = pygame.image.load("elSol.png").convert()
+elDestruc = pygame.image.load("elDestruc.png").convert()
+avatar1 = pygame.image.load("avatar1.png").convert_alpha()
+avatar2 = pygame.image.load("avatar2.png").convert_alpha()
+
+fenetre.blit(fond, (0, 0))
 
 
 def initJoueurs():
@@ -25,7 +30,7 @@ def initJoueurs():
     choixAvatar = ""
     while True:
         try:
-            print("Choisissez un personnage :", f"1- {avatar1}", f"2- {avatar2}", sep="\n")
+            print("Choisissez un personnage :", f"1- Rouge", f"2- Bleu", sep="\n")
             choixPerso = input()
 
             # par défaut
@@ -45,10 +50,7 @@ def initJoueurs():
     choixNom = ""
     while True:
         try:
-            if choixPerso == 1:
-                print(f"Donnez un nom à votre personnage {avatar1}:")
-            if choixPerso == 2:
-                print(f"Donnez un nom à votre personnage {avatar2}:")
+            print(f"Donnez un nom à votre personnage :")
             choixNom = input()
             if choixNom == "":
                 choixNom = "Tatatetetititototututyty"
@@ -64,8 +66,8 @@ def initJoueurs():
             "x": 1}
 
 
-def initCarte(tJoueur):
-    carte = np.full((nbLigne, nbCol), elDestruc, dtype='str')
+def initCarte():
+    carte = np.full((nbLigne, nbCol), elMurPlein)
     carte[1:-1:2, 1:-1] = elSol
     carte[1:-1, 1:-1:2] = elSol
     # partie normale
@@ -82,75 +84,76 @@ def initCarte(tJoueur):
         carte[-2, 6] = elDestruc
         carte[-2, 7] = elDestruc
 
-    # positionnement des joueurs
-    if isinstance(tJoueur["avatar"], str):
-        carte[tJoueur["y"], tJoueur["x"]] = tJoueur["avatar"]
-    else:
-        carte[tJoueur["y"], tJoueur["x"]] = "1"
+    return carte
 
+def initEmplJoueur(carte, tJoueur):
+    # positionnement des joueurs
+    carte[tJoueur["y"], tJoueur["x"]] = tJoueur["avatar"]
     return carte
 
 def afficheCarte(carte):
+    i = 1
     for ligne in carte:
-        ligneCarte = ""
+        j = 1
         for elem in ligne:
-            ligneCarte += elem
-        print(ligneCarte)
+            fenetre.blit(elem, (i*40, j*40))
+            j += 1
+        i += 1
 
 def valideMvt(key):
     result = False
-    if key == keyboard.Key.enter:
+    if key == K_RETURN:
         result = True
-    if key == keyboard.Key.up and carte[(tJoueur["y"]-1)%nbLigne, tJoueur["x"]] != elMurPlein:
+    if key == K_LEFT and carte[(tJoueur["y"]-1)%nbLigne, tJoueur["x"]] != elMurPlein:
         result = True
-    if key == keyboard.Key.down and carte[(tJoueur["y"]+1)%nbLigne, tJoueur["x"]] != elMurPlein:
+    if key == K_RIGHT and carte[(tJoueur["y"]+1)%nbLigne, tJoueur["x"]] != elMurPlein:
         result = True
-    if key == keyboard.Key.left and carte[tJoueur["y"], (tJoueur["x"]-1)%nbCol] != elMurPlein:
+    if key == K_UP and carte[tJoueur["y"], (tJoueur["x"]-1)%nbCol] != elMurPlein:
         result = True
-    if key == keyboard.Key.right and carte[tJoueur["y"], (tJoueur["x"]+1)%nbCol] != elMurPlein:
+    if key == K_DOWN and carte[tJoueur["y"], (tJoueur["x"]+1)%nbCol] != elMurPlein:
         result = True
+
+    pygame.display.flip()
 
     return result
 
-def on_press(key):
-    if key == keyboard.Key.esc:
-        # Stop listener
-        return False
-    if valideMvt(key):
-        if key == keyboard.Key.up:
-            carte[tJoueur["y"], tJoueur["x"]] = elSol
-            tJoueur["y"] -= 1
-            tJoueur["y"] = tJoueur["y"]%nbLigne
-            carte[tJoueur["y"], tJoueur["x"]] = tJoueur["avatar"]
-            valideMvt(key)
-        if key == keyboard.Key.down:
-            carte[tJoueur["y"], tJoueur["x"]] = elSol
-            tJoueur["y"] += 1
-            tJoueur["y"] = tJoueur["y"] % nbLigne
-            carte[tJoueur["y"], tJoueur["x"]] = tJoueur["avatar"]
-        if key == keyboard.Key.left:
-            carte[tJoueur["y"], tJoueur["x"]] = elSol
-            tJoueur["x"] -= 1
-            tJoueur["x"] = tJoueur["x"] % nbCol
-            carte[tJoueur["y"], tJoueur["x"]] = tJoueur["avatar"]
-        if key == keyboard.Key.right:
-            carte[tJoueur["y"], tJoueur["x"]] = elSol
-            tJoueur["x"] += 1
-            tJoueur["x"] = tJoueur["x"] % nbCol
-            carte[tJoueur["y"], tJoueur["x"]] = tJoueur["avatar"]
+tJoueur = initJoueurs()
 
-    clear()
+carte = initCarte()
+pygame.display.flip()
+carte = initEmplJoueur(carte, tJoueur)
+pygame.display.flip()
+
+
+continuer = True
+while continuer:
+    for event in pygame.event.get():  # Attente des événements
+        if event.type == QUIT:
+            continuer = False
+        if event.type == KEYDOWN:
+            if valideMvt(event.key):
+                if event.key == K_LEFT:
+                    carte[tJoueur["y"], tJoueur["x"]] = elSol
+                    tJoueur["y"] -= 1
+                    tJoueur["y"] = tJoueur["y"]%nbLigne
+                    carte[tJoueur["y"], tJoueur["x"]] = tJoueur["avatar"]
+                if event.key == K_RIGHT:
+                    carte[tJoueur["y"], tJoueur["x"]] = elSol
+                    tJoueur["y"] += 1
+                    tJoueur["y"] = tJoueur["y"] % nbLigne
+                    carte[tJoueur["y"], tJoueur["x"]] = tJoueur["avatar"]
+                if event.key == K_UP:
+                    carte[tJoueur["y"], tJoueur["x"]] = elSol
+                    tJoueur["x"] -= 1
+                    tJoueur["x"] = tJoueur["x"] % nbCol
+                    carte[tJoueur["y"], tJoueur["x"]] = tJoueur["avatar"]
+                if event.key == K_DOWN:
+                    carte[tJoueur["y"], tJoueur["x"]] = elSol
+                    tJoueur["x"] += 1
+                    tJoueur["x"] = tJoueur["x"] % nbCol
+                    carte[tJoueur["y"], tJoueur["x"]] = tJoueur["avatar"]
+
+
     afficheCarte(carte)
 
-clear()
-tJoueur = initJoueurs()
-clear()
-print(f'{tJoueur["pseudo"]}, voici votre avatar {tJoueur["avatar"]}')
-
-carte = initCarte(tJoueur)
-
-# Collect events until released
-with keyboard.Listener(on_press=on_press) as listener:
-    print('Appuyez sur la touche [Entrée] pour démarrer, touche [Échap] pour quitter')
-    listener.join()
-    sleep(0.25)
+    pygame.display.flip()
