@@ -18,6 +18,7 @@ fond = pygame.transform.scale(fond, (40*17, 40*15))
 elMurPlein = pygame.image.load("elMurPlein.png").convert()
 elSol = pygame.image.load("elSol.png").convert()
 elDestruc = pygame.image.load("elDestruc.png").convert()
+dynamite = pygame.image.load("dynamite.png").convert_alpha()
 avatar1 = pygame.image.load("avatar1.png").convert_alpha()
 avatar2 = pygame.image.load("avatar2.png").convert_alpha()
 
@@ -104,13 +105,13 @@ def valideMvt(key):
     result = False
     if key == K_RETURN:
         result = True
-    if key == K_LEFT and carte[(tJoueur["y"]-1)%nbLigne, tJoueur["x"]] != elMurPlein:
+    if key == K_LEFT and (carte[(tJoueur["y"]-1)%nbLigne, tJoueur["x"]] != elMurPlein and carte[(tJoueur["y"]-1)%nbLigne, tJoueur["x"]] != elDestruc):
         result = True
-    if key == K_RIGHT and carte[(tJoueur["y"]+1)%nbLigne, tJoueur["x"]] != elMurPlein:
+    if key == K_RIGHT and (carte[(tJoueur["y"]+1)%nbLigne, tJoueur["x"]] != elMurPlein and carte[(tJoueur["y"]+1)%nbLigne, tJoueur["x"]] != elDestruc):
         result = True
-    if key == K_UP and carte[tJoueur["y"], (tJoueur["x"]-1)%nbCol] != elMurPlein:
+    if key == K_UP and (carte[tJoueur["y"], (tJoueur["x"]-1)%nbCol] != elMurPlein and carte[tJoueur["y"], (tJoueur["x"]-1)%nbCol] != elDestruc):
         result = True
-    if key == K_DOWN and carte[tJoueur["y"], (tJoueur["x"]+1)%nbCol] != elMurPlein:
+    if key == K_DOWN and (carte[tJoueur["y"], (tJoueur["x"]+1)%nbCol] != elMurPlein and carte[tJoueur["y"], (tJoueur["x"]+1)%nbCol] != elDestruc):
         result = True
 
     pygame.display.flip()
@@ -131,6 +132,8 @@ while continuer:
         if event.type == QUIT:
             continuer = False
         if event.type == KEYDOWN:
+            if event.key == K_SPACE:
+                carte[tJoueur["y"], tJoueur["x"]] = dynamite
             if valideMvt(event.key):
                 if event.key == K_LEFT:
                     carte[tJoueur["y"], tJoueur["x"]] = elSol
