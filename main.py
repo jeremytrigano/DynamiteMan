@@ -17,6 +17,8 @@ fond = pygame.transform.scale(fond, (40*17, 40*15))
 # liste assets graphiques
 elMurPlein = pygame.image.load("elMurPlein.png").convert()
 elSol = pygame.image.load("elSol.png").convert()
+elTemp = pygame.image.load("elSol.png").convert()
+elNext = pygame.image.load("elSol.png").convert()
 elDestruc = pygame.image.load("elDestruc.png").convert()
 dynamite = pygame.image.load("dynamite.png").convert_alpha()
 avatar1 = pygame.image.load("avatar1.png").convert_alpha()
@@ -100,6 +102,7 @@ def afficheCarte(carte):
             fenetre.blit(elem, (i*40, j*40))
             j += 1
         i += 1
+    pygame.display.flip()
 
 def valideMvt(key):
     result = False
@@ -134,29 +137,36 @@ while continuer:
         if event.type == KEYDOWN:
             if event.key == K_SPACE:
                 carte[tJoueur["y"], tJoueur["x"]] = dynamite
+                elNext = dynamite
             if valideMvt(event.key):
                 if event.key == K_LEFT:
-                    carte[tJoueur["y"], tJoueur["x"]] = elSol
+                    elTemp = carte[tJoueur["y"]-1, tJoueur["x"]]
+                    carte[tJoueur["y"], tJoueur["x"]] = elNext
+                    elNext = elTemp
                     tJoueur["y"] -= 1
                     tJoueur["y"] = tJoueur["y"]%nbLigne
                     carte[tJoueur["y"], tJoueur["x"]] = tJoueur["avatar"]
                 if event.key == K_RIGHT:
-                    carte[tJoueur["y"], tJoueur["x"]] = elSol
+                    elTemp = carte[tJoueur["y"]+1, tJoueur["x"]]
+                    carte[tJoueur["y"], tJoueur["x"]] = elNext
+                    elNext = elTemp
                     tJoueur["y"] += 1
                     tJoueur["y"] = tJoueur["y"] % nbLigne
                     carte[tJoueur["y"], tJoueur["x"]] = tJoueur["avatar"]
                 if event.key == K_UP:
-                    carte[tJoueur["y"], tJoueur["x"]] = elSol
+                    elTemp = carte[tJoueur["y"], tJoueur["x"]-1]
+                    carte[tJoueur["y"], tJoueur["x"]] = elNext
+                    elNext = elTemp
                     tJoueur["x"] -= 1
                     tJoueur["x"] = tJoueur["x"] % nbCol
                     carte[tJoueur["y"], tJoueur["x"]] = tJoueur["avatar"]
                 if event.key == K_DOWN:
-                    carte[tJoueur["y"], tJoueur["x"]] = elSol
+                    elTemp = carte[tJoueur["y"], tJoueur["x"]+1]
+                    carte[tJoueur["y"], tJoueur["x"]] = elNext
+                    elNext = elTemp
                     tJoueur["x"] += 1
                     tJoueur["x"] = tJoueur["x"] % nbCol
                     carte[tJoueur["y"], tJoueur["x"]] = tJoueur["avatar"]
 
+        afficheCarte(carte)
 
-    afficheCarte(carte)
-
-    pygame.display.flip()
