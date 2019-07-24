@@ -7,9 +7,13 @@ from pygame.locals import *
 nbLigne = 15
 nbCol = 13
 
+tailleBloc = 40
+
+lDynamite = []
+
 
 pygame.init()
-fenetre = pygame.display.set_mode((40*17, 40*15), RESIZABLE)
+fenetre = pygame.display.set_mode((tailleBloc*(nbLigne+2), tailleBloc*(nbCol+2)), RESIZABLE)
 
 fond = pygame.image.load("background.jpg").convert()
 fond = pygame.transform.scale(fond, (40*17, 40*15))
@@ -20,9 +24,13 @@ elSol = pygame.image.load("elSol.png").convert()
 elTemp = pygame.image.load("elSol.png").convert()
 elNext = pygame.image.load("elSol.png").convert()
 elDestruc = pygame.image.load("elDestruc.png").convert()
+elDynamite = pygame.image.load("elDynamite.png").convert_alpha()
 dynamite = pygame.image.load("dynamite.png").convert_alpha()
 avatar1 = pygame.image.load("avatar1.png").convert_alpha()
+avatar1start = pygame.image.load("avatar1start.png").convert()
 avatar2 = pygame.image.load("avatar2.png").convert_alpha()
+avatar2start = pygame.image.load("avatar2start.png").convert()
+elExplosion = pygame.image.load("elExplosion.png").convert()
 
 fenetre.blit(fond, (0, 0))
 
@@ -34,7 +42,8 @@ def initJoueurs():
     while True:
         try:
             print("Choisissez un personnage :", f"1- Rouge", f"2- Bleu", sep="\n")
-            choixPerso = input()
+            #choixPerso = input()
+            choixPerso = 2
 
             # par défaut
             if choixPerso == "":
@@ -54,7 +63,8 @@ def initJoueurs():
     while True:
         try:
             print(f"Donnez un nom à votre personnage :")
-            choixNom = input()
+            #choixNom = input()
+            choixNom = "vv"
             if choixNom == "":
                 choixNom = "Tatatetetititototututyty"
             if isinstance(choixNom, str) and choixNom != "":
@@ -91,7 +101,10 @@ def initCarte():
 
 def initEmplJoueur(carte, tJoueur):
     # positionnement des joueurs
-    carte[tJoueur["y"], tJoueur["x"]] = tJoueur["avatar"]
+    if tJoueur["avatar"] == avatar1:
+        carte[tJoueur["y"], tJoueur["x"]] = avatar1start
+    if tJoueur["avatar"] == avatar2:
+        carte[tJoueur["y"], tJoueur["x"]] = avatar2start
     return carte
 
 def afficheCarte(carte):
@@ -121,11 +134,29 @@ def valideMvt(key):
 
     return result
 
+def poseDynamite(x,y):
+    lDynamite.append([x, y, 10])
+
+def ignitionMeche():
+    i = 0
+    for dyn in lDynamite:
+        dyn[2] -= 1
+        if dyn[2] == 0:
+            carte[dyn[1], dyn[0]] = elExplosion
+        if dyn[2] == -1:
+            carte[dyn[1], dyn[0]] = elSol
+            del lDynamite[i]
+            i -= 1
+        i += 1
+    print(lDynamite)
+
 tJoueur = initJoueurs()
 
 carte = initCarte()
 pygame.display.flip()
 carte = initEmplJoueur(carte, tJoueur)
+
+afficheCarte(carte)
 pygame.display.flip()
 
 
@@ -135,9 +166,12 @@ while continuer:
         if event.type == QUIT:
             continuer = False
         if event.type == KEYDOWN:
+            if event.key == K_ESCAPE:
+                continuer = False
             if event.key == K_SPACE:
                 carte[tJoueur["y"], tJoueur["x"]] = dynamite
-                elNext = dynamite
+                elNext = elDynamite
+                poseDynamite(tJoueur["x"], tJoueur["y"])
             if valideMvt(event.key):
                 if event.key == K_LEFT:
                     elTemp = carte[tJoueur["y"]-1, tJoueur["x"]]
@@ -168,5 +202,5 @@ while continuer:
                     tJoueur["x"] = tJoueur["x"] % nbCol
                     carte[tJoueur["y"], tJoueur["x"]] = tJoueur["avatar"]
 
-        afficheCarte(carte)
-
+            ignitionMeche()
+            afficheCarte(carte)
