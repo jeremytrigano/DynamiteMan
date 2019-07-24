@@ -3,6 +3,8 @@ import numpy as np
 import pygame
 from pygame.locals import *
 
+import random
+
 # taille carte
 nbLigne = 15
 nbCol = 13
@@ -43,7 +45,7 @@ def initJoueurs():
         try:
             print("Choisissez un personnage :", f"1- Rouge", f"2- Bleu", sep="\n")
             #choixPerso = input()
-            choixPerso = 2
+            choixPerso = 1
 
             # par défaut
             if choixPerso == "":
@@ -88,14 +90,14 @@ def initCarte():
     # partie rapide
     # nbDestruc = 10
 
-    if nbDestruc == 60:
-        carte[3, 5] = elDestruc
-        carte[3, 6] = elDestruc
-        carte[3, 7] = elDestruc
-        carte[4, 3] = elDestruc
-        carte[-2, 5] = elDestruc
-        carte[-2, 6] = elDestruc
-        carte[-2, 7] = elDestruc
+    i = 0
+    while i <= nbDestruc:
+        ryInt = random.randint(1, nbLigne-1)
+        rxInt = random.randint(1, nbCol - 1)
+        # si sol et pas alentours départ
+        if not (rxInt==1 and ryInt==2) and not (rxInt==2 and ryInt==1) and carte[ryInt, rxInt] == elSol:
+            carte[ryInt, rxInt] = elDestruc
+            i += 1
 
     return carte
 
@@ -135,7 +137,7 @@ def valideMvt(key):
     return result
 
 def poseDynamite(x,y):
-    lDynamite.append([x, y, 10])
+    lDynamite.append([x, y, 5])
 
 def ignitionMeche():
     i = 0
@@ -143,8 +145,24 @@ def ignitionMeche():
         dyn[2] -= 1
         if dyn[2] == 0:
             carte[dyn[1], dyn[0]] = elExplosion
+            if carte[dyn[1] - 1, dyn[0]] != elMurPlein:
+                carte[dyn[1]-1, dyn[0]] = elExplosion
+            if carte[dyn[1]+1, dyn[0]] != elMurPlein:
+                carte[dyn[1]+1, dyn[0]] = elExplosion
+            if carte[dyn[1], dyn[0]-1] != elMurPlein:
+                carte[dyn[1], dyn[0]-1] = elExplosion
+            if carte[dyn[1], dyn[0]+1] != elMurPlein:
+                carte[dyn[1], dyn[0]+1] = elExplosion
         if dyn[2] == -1:
             carte[dyn[1], dyn[0]] = elSol
+            if carte[dyn[1] - 1, dyn[0]] == elExplosion:
+                carte[dyn[1]-1, dyn[0]] = elSol
+            if carte[dyn[1]+1, dyn[0]] == elExplosion:
+                carte[dyn[1]+1, dyn[0]] = elSol
+            if carte[dyn[1], dyn[0]-1] == elExplosion:
+                carte[dyn[1], dyn[0]-1] = elSol
+            if carte[dyn[1], dyn[0]+1] == elExplosion:
+                carte[dyn[1], dyn[0]+1] = elSol
             del lDynamite[i]
             i -= 1
         i += 1
